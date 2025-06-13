@@ -8,14 +8,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class HazavaoController {
 
-    private final ChatGptService chatGptService;
+  private final ChatGptService chatGptService;
 
-    public HazavaoController(ChatGptService chatGptService) {
-        this.chatGptService = chatGptService;
-    }
+  public HazavaoController(ChatGptService chatGptService) {
+    this.chatGptService = chatGptService;
+  }
 
-    @GetMapping("/hazavao")
-    public String hazavao(@RequestParam String teny) {
-        return chatGptService.getMalagasyDefinition(teny);
-    }
+  @GetMapping("/hazavao")
+  public String hazavao(@RequestParam String teny) {
+    return chatGptService.getMalagasyDefinition(teny);
+  }
 }
