@@ -1,0 +1,59 @@
+package com.hei.fy.service;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.inject.Singleton;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+@Singleton
+public class ChatGptService {
+
+    private static final String API_KEY = System.getenv("OPENAI_API_KEY");
+    private static final String ENDPOINT = "https://api.openai.com/v1/chat/completions";
+
+    /**
+     * Gets the Malagasy definition of a word via the ChatGPT API.
+     *
+     * @param word The word to define.
+     * @return The definition in Malagasy or an error message.
+     */
+    public String getMalagasyDefinition(String word) {
+        try {
+            String prompt = "Hazavao amin'ny teny malagasy ny dikan'ny teny hoe \"" + word + "\".";
+
+            String requestBody = """
+                {
+                  "model": "gpt-3.5-turbo",
+                  "messages": [
+                    {"role": "user", "content": "%s"}
+                  ]
+                }
+                """.formatted(prompt);
+
+            HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(ENDPOINT))
+                .header("Authorization", "Bearer " + API_KEY)
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                .build();
+
+            HttpResponse<String> response = HttpClient.newHttpClient()
+                .send(request, HttpResponse.BodyHandlers.ofString());
+
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(response.body());
+
+            return root.path("choices")
+                       .get(0)
+                       .path("message")
+                       .path("content")
+                       .asText();
+
+        } catch (Exception e) {
+            return "Error: " + e.getMessage();
+        }
+    }
+}
